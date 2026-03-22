@@ -8,15 +8,16 @@ const {
   deleteGame 
 } = require('../controllers/gameController');
 
-// Route for /api/games
-router.route('/')
-  .get(getGames)
-  .post(createGame);
+// 1. Import the protector middleware
+const { protect } = require('../middleware/authMiddleware');
 
-// Routes for /api/games/:id
-router.route('/:id')
-  .get(getGameById)
-  .put(updateGame)
-  .delete(deleteGame);
+// Public route: anyone can list games
+router.get('/', getGames);
+
+// Protected routes: only logged-in users can use these
+router.post('/', protect, createGame);
+router.get('/:id', protect, getGameById);
+router.put('/:id', protect, updateGame);
+router.delete('/:id', protect, deleteGame);
 
 module.exports = router;
