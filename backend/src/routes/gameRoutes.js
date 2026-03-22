@@ -1,9 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { getGames, createGame } = require('../controllers/gameController');
+const { 
+  getGames, 
+  createGame, 
+  getGameById, 
+  updateGame, 
+  deleteGame 
+} = require('../controllers/gameController');
 
-// Define routes for /api/games
-router.get('/', getGames);    // GET request to list games
-router.post('/', createGame); // POST request to add a game
+// Route for /api/games
+router.route('/')
+  .get(getGames)
+  .post(createGame);
+
+// Routes for /api/games/:id
+router.route('/:id')
+  .get(getGameById)
+  .put(updateGame)
+  .delete(deleteGame);
 
 module.exports = router;
