@@ -1,4 +1,5 @@
-# WebTechnologies2# Videójáték Nyilvántartó Rendszer
+# WebTechnologies2
+# Videójáték Nyilvántartó Rendszer
 
 Ez egy Webtechnológiák 2 kurzusra készített beadandó feladat, amely egy modern, MEAN stack (MongoDB, Express, Angular, Node.js) alapú készletnyilvántartó alkalmazás.
 
