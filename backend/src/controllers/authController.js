@@ -1,9 +1,13 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
 
 /**
- * Helper function to generate a JWT token.
- * We set the expiration to 30 days.
+ * Helper function to generate a JSON Web Token.
+ * The token is signed using the secret from environment variables 
+ * and is set to expire in 30 days.
+ * * @param {string} id - The user's database ID
+ * @returns {string} - The generated JWT
  */
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -12,69 +16,66 @@ const generateToken = (id) => {
 };
 
 /**
- * @desc    Register a new user
+ * @desc    Register a new user in the system
  * @route   POST /api/auth/register
  * @access  Public
  */
-const registerUser = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+const registerUser = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body;
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
+  // Check if the user already exists in the database
+  const userExists = await User.findOne({ email });
 
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Create user (password will be hashed automatically by our Model hook)
-    const user = await User.create({
-      username,
-      email,
-      password,
-    });
-
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        token: generateToken(user._id), // We send the token immediately after registration
-      });
-    }
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+  if (userExists) {
+    res.status(400);
+    throw new Error('User already exists');
   }
-};
+
+  // Create the user (Password hashing is handled by the User model's pre-save hook)
+  const user = await User.create({
+    username,
+    email,
+    password,
+  });
+
+  if (user) {
+    res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(400);
+    throw new Error('Invalid user data provided');
+  }
+});
 
 /**
- * @desc    Authenticate user & get token
+ * @desc    Authenticate a user and return a token
  * @route   POST /api/auth/login
  * @access  Public
  */
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    // Find user by email and explicitly include the password for comparison
-    const user = await User.findOne({ email }).select('+password');
+  // Find user and explicitly select the password field which is hidden by default
+  const user = await User.findOne({ email }).select('+password');
 
-    // Check if user exists and the password matches (using the method we wrote in User model)
-    if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        token: generateToken(user._id),
-      });
-    } else {
-      // Don't tell them if the email or the password was wrong for security reasons
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  // Check if user exists and the provided password matches the hashed password
+  if (user && (await user.matchPassword(password))) {
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    // We use 401 Unauthorized for failed login attempts
+    res.status(401);
+    throw new Error('Invalid email or password');
   }
-};
+});
 
 module.exports = {
   registerUser,

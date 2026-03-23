@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 
-/**
- * Game Schema
- * Defines the structure of a video game entry in the database.
- */
 const gameSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User' // Links the game to a specific user
+    },
     title: {
         type: String,
         required: [true, 'Please add a game title'],
@@ -20,15 +21,16 @@ const gameSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    releaseYear: {
-        type: Number,
-        required: true
-    },
     rating: {
         type: Number,
         min: 1,
         max: 10,
         default: 5
+    },
+    status: {
+        type: String,
+        enum: ['Playing', 'Completed', 'Backlog'],
+        default: 'Backlog'
     },
     createdAt: {
         type: Date,

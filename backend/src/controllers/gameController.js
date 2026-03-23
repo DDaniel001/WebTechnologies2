@@ -1,95 +1,95 @@
 const Game = require('../models/Game');
+const asyncHandler = require('express-async-handler');
 
 /**
- * @desc    Get all games from the database
+ * @desc    Get all games
  * @route   GET /api/games
+ * @access  Public
  */
-const getGames = async (req, res) => {
-  try {
-    const games = await Game.find();
-    res.status(200).json(games);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+const getGames = asyncHandler(async (req, res) => {
+  const games = await Game.find();
+  res.status(200).json(games);
+});
 
 /**
- * @desc    Add a new game to the inventory
+ * @desc    Create a new game
  * @route   POST /api/games
+ * @access  Private
  */
-const createGame = async (req, res) => {
-  try {
-    // Check if the game already exists to prevent duplicates
-    const gameExists = await Game.findOne({ title: req.body.title });
+const createGame = asyncHandler(async (req, res) => {
+  // We can access req.user.id because of the 'protect' middleware
+  const { title, platform, genre, rating, status } = req.body;
 
-    if (gameExists) {
-      return res.status(400).json({ message: 'Game already exists' });
-    }
+  const game = await Game.create({
+    title,
+    platform,
+    genre,
+    rating,
+    status,
+    user: req.user._id, // Link the game to the logged-in user
+  });
 
-    const game = await Game.create(req.body);
-    res.status(201).json(game);
-  } catch (error) {
-    // Return validation errors (e.g., if a field is missing)
-    res.status(400).json({ message: error.message });
-  }
-};
+  res.status(201).json(game);
+});
 
 /**
  * @desc    Get a single game by ID
  * @route   GET /api/games/:id
+ * @access  Private
  */
-const getGameById = async (req, res) => {
-  try {
-    const game = await Game.findById(req.params.id);
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-    res.status(200).json(game);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+const getGameById = asyncHandler(async (req, res) => {
+  const game = await Game.findById(req.params.id);
+
+  if (game) {
+    res.json(game);
+  } else {
+    res.status(404);
+    throw new Error('Game not found');
   }
-};
+});
 
 /**
  * @desc    Update a game
  * @route   PUT /api/games/:id
+ * @access  Private
  */
-const updateGame = async (req, res) => {
-  try {
-    const game = await Game.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Return the modified document
-      runValidators: true // Ensure validation still works
-    });
-    
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-    res.status(200).json(game);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+const updateGame = asyncHandler(async (req, res) => {
+  const game = await Game.findById(req.params.id);
+
+  if (!game) {
+    res.status(404);
+    throw new Error('Game not found');
   }
-};
+
+  const updatedGame = await Game.findByIdAndUpdate(req.params.id, req.body, {
+    new: true, // Returns the updated document
+    runValidators: true,
+  });
+
+  res.json(updatedGame);
+});
 
 /**
  * @desc    Delete a game
  * @route   DELETE /api/games/:id
+ * @access  Private
  */
-const deleteGame = async (req, res) => {
-  try {
-    const game = await Game.findByIdAndDelete(req.params.id);
-    if (!game) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-    res.status(200).json({ message: 'Game removed successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+const deleteGame = asyncHandler(async (req, res) => {
+  const game = await Game.findById(req.params.id);
+
+  if (game) {
+    await game.deleteOne();
+    res.json({ message: 'Game removed' });
+  } else {
+    res.status(404);
+    throw new Error('Game not found');
   }
-};
+});
 
 module.exports = {
   getGames,
   createGame,
   getGameById,
   updateGame,
-  deleteGame
+  deleteGame,
 };
