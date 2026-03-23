@@ -61,7 +61,7 @@ JWT_SECRET=your_super_secret_key_here
 
 | Method | Endpoint | Description | Protection |
 | :--- | :--- | :--- | :--- |
-| **POST** | `/api/auth/register` | Create a new user account | None |
+| **POST** | `/api/auth/register` | Create a new user account | Rate Limited |
 | **POST** | `/api/auth/login` | Authenticate and receive a JWT Token | Rate Limited |
 | **GET** | `/api/games` | List all video games | Public |
 | **POST** | `/api/games` | Add a new game to the inventory | **JWT Token** |
