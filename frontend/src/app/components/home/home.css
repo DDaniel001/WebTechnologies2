@@ -1,0 +1,22 @@
+.home-container {
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.home-card {
+  width: 100%;
+  max-width: 600px;
+  border-top: 4px solid #3f51b5; /* Primary color accent */
+}
+
+mat-card-title {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+mat-card-content {
+  margin: 20px 0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}

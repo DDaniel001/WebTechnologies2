@@ -1,0 +1,46 @@
+/* Center the login card both horizontally and vertically on the screen */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh; /* Adjust height based on your layout preference */
+  padding: 20px;
+}
+
+/* Define the look and maximum width of the login card */
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure form fields and buttons occupy the full width of the card */
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Style for displaying error messages in red */
+.error-text {
+  color: #f44336; /* Material design red */
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Center the footer text (registration link) */
+mat-card-footer {
+  padding: 16px;
+  text-align: center;
+}
+
+mat-card-footer a {
+  color: #3f51b5; /* Material primary color */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+mat-card-footer a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,21 @@
+<div class="home-container">
+  <mat-card class="home-card">
+    <mat-card-header>
+      <mat-card-title>Welcome to Game Inventory!</mat-card-title>
+      <mat-card-subtitle *ngIf="user$ | async as user">
+        Logged in as: <strong>{{ user.username }}</strong>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p>You have successfully logged into your video game management system.</p>
+      <p>Next step: Adding my favorite games to the list!</p>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-flat-button color="warn" (click)="onLogout()">
+        <mat-icon>logout</mat-icon> Logout
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
