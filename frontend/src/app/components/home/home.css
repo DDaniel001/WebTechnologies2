@@ -1,22 +1,60 @@
-.home-container {
-  padding: 40px;
+.dashboard-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.home-card {
+.welcome-card {
   width: 100%;
-  max-width: 600px;
-  border-top: 4px solid #3f51b5; /* Primary color accent */
 }
 
-mat-card-title {
-  font-size: 1.5rem;
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* The form takes 1 part, the list takes 2 parts of the screen */
+  gap: 24px;
+}
+
+/* Make it responsive for smaller screens */
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr; 
+  }
+}
+
+.form-card {
+  height: fit-content;
+}
+
+.full-width {
+  width: 100%;
   margin-bottom: 8px;
 }
 
-mat-card-content {
-  margin: 20px 0;
-  font-size: 1.1rem;
-  line-height: 1.6;
+.row {
+  display: flex;
+  gap: 16px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.list-title {
+  margin-top: 0;
+  color: #3f51b5; /* Primary color */
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.game-card {
+  border-left: 4px solid #ff4081; /* Accent color on the left edge */
+}
+
+.empty-text {
+  color: #666;
+  font-style: italic;
 }
