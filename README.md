@@ -1,79 +1,73 @@
-# Videójáték Nyilvántartó Rendszer
+# Video Game Inventory Management System
 [![Playwright Tests](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml/badge.svg)](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml)
 
-Ez egy Webtechnológiák 2 kurzusra készített beadandó feladat, amely egy modern, MEAN stack (MongoDB, Express, Angular, Node.js) alapú készletnyilvántartó alkalmazás.
+A modern inventory management application built as a final project for the Web Technologies 2 course. The system leverages the MEAN stack (MongoDB, Express, Angular, Node.js) to provide a robust and scalable solution.
 
-## Megvalósított Backend Funkciók
+## Backend Features (REST API)
 
-A backend egy REST API, amely az alábbi funkciókkal rendelkezik:
+The backend is a production-ready REST API featuring:
 
-* **User Authentication (JWT)**: Biztonságos regisztráció és bejelentkezés JSON Web Token használatával.
-* **Password Security**: A jelszavak tárolása előtt automatikus `bcryptjs` alapú titkosítás történik a Modell szinten.
-* **Route Protection**: Egy egyedi `protect` middleware ellenőrzi a tokent, mielőtt hozzáférést engedne a bizalmas adatokhoz.
-* **Security & Rate Limiting**: Védelem a brute-force támadások ellen; a kérések száma korlátozva van (általános és auth-specifikus limitek).
-* **Global Error Handling**: Egységes hibaformátum és `asyncHandler` alapú tiszta kódstruktúra, try-catch blokkok nélkül a kontrollerekben.
-* **CRUD Operations**: Teljes körű játékkezelés (Hozzáadás, Listázás, Módosítás, Törlés) felhasználókhoz kötve.
-
----
+* **User Authentication (JWT):** Secure registration and login using JSON Web Tokens.
+* **Password Security:** Automatic `bcryptjs`-based encryption at the Model level before storage.
+* **Route Protection:** Custom `protect` middleware to verify tokens before granting access to sensitive data.
+* **Security & Rate Limiting:** Built-in protection against brute-force attacks with global and auth-specific request limits.
+* **Global Error Handling:** Unified error format using a custom `asyncHandler` structure to maintain clean, try-catch-free controller logic.
+* **Full CRUD Operations:** Comprehensive game management (Create, Read, Update, Delete) mapped to specific users.
 
 ---
 
-## Automatizált Tesztelési Architektúra (QA Portfólió)
+## Automated Testing Architecture (QA Portfolio)
 
-*Ez a szekció a projektben implementált minőségbiztosítási (QA) folyamatokat részletezi, bemutatva az elvárt automatizált tesztelési megoldásokat.*
+*This section details the Quality Assurance (QA) processes implemented in the project, showcasing industry-standard automated testing solutions.*
 
-### 1. End-to-End (E2E) Tesztelés (Playwright)
+### 1. End-to-End (E2E) Testing (Playwright)
 
-![Frontend Automated Tests](docs/frontend_automated_tests.png)
+The frontend UI is validated using **Playwright**, simulating real user behavior and critical business flows.
+* **Page Object Model (POM):** The test suite is structured using the POM design pattern. HTML locators and page-specific actions are encapsulated in classes (e.g., `login.page.ts`, `home.page.ts`), ensuring high maintainability.
+* **API Mocking & Network Interception:** Backend dependencies are isolated using Playwright's `page.route()`. This allows testing frontend logic (e.g., empty states, server errors, and data rendering) independently from the live database.
+* **UI State Validation:** Tests strictly verify complex UI states, including `disabled` button logic for invalid forms and the accuracy of Angular Material validation messages.
 
-A frontend automatizált UI tesztelését a **Playwright** biztosítja, amely valós felhasználói viselkedéseket és kritikus folyamatokat szimulál.
-* **Page Object Model (POM):** A tesztkészlet a POM tervezési minta alapján épül fel. A HTML lokátorok és az oldal-specifikus műveletek külön osztályokba vannak szervezve (pl. `login.page.ts`, `home.page.ts`), ami magas szintű karbantarthatóságot eredményez.
-* **API Mocking és Hálózat Elfogás:** A backend függőségek hatékonyan el vannak különítve a Playwright `page.route()` metódusának segítségével. Ez lehetővé teszi a frontend logika (pl. üres állapotok, szerverhibák és adatmegjelenítés) tesztelését az élő adatbázistól függetlenül.
-* **UI Állapot Validáció:** A tesztek szigorúan ellenőrzik a komplex UI állapotokat, beleértve az űrlapok gombjainak `disabled` (kikapcsolt) állapotát érvénytelen adatok esetén, valamint az Angular Material validációs hibaüzeneteinek pontos megjelenését.
+### 2. Backend Unit & Integration Testing (Jest)
 
-### 2. Backend Unit- és Integrációs Tesztelés (Jest)
-
-![Backend Coverage](docs/backend_coverage.png)
-
-A Node.js REST API egységteszteket tartalmaz az üzleti logika integritásának és biztonságának garantálása érdekében.
-* **Izolált Tesztelés (Mocking):** A `jest.mock()` használatával az adatbázis réteg (Mongoose modellek) és a kriptográfiai funkciók (bcrypt) mockolva lettek, így a tesztek villámgyorsan és egymástól teljesen elszigetelten futnak.
-* **AAA Minta:** Minden teszteset szigorúan követi az **Arrange, Act, Assert** (Előkészítés, Végrehajtás, Ellenőrzés) struktúrát a maximális átláthatóság érdekében.
-* **Happy Path és Negatív Ágak:** A tesztek nem csupán az ideális lefutást ("Happy Path") vizsgálják, hanem a negatív ágakat és a hibás bemeneteket (unhappy paths) is, garantálva a megfelelő hibaüzenetek és státuszkódok visszaadását.
+The Node.js REST API includes a comprehensive test suite to guarantee business logic integrity and security.
+* **Isolated Testing (Mocking):** Using `jest.mock()`, the database layer (Mongoose models) and cryptographic functions (bcrypt) are mocked, allowing tests to run at lightning speed in total isolation.
+* **AAA Pattern:** Every test case strictly follows the **Arrange, Act, Assert** structure for maximum clarity.
+* **Happy Path & Negative Testing:** Beyond the "Happy Path," the suite covers edge cases and invalid inputs (unhappy paths) to ensure correct error messages and HTTP status codes are returned.
 
 ### 3. CI/CD Pipeline (GitHub Actions)
-A projekt egy teljesen automatizált Folyamatos Integrációs (CI) folyamattal rendelkezik, amely a **GitHub Actions** segítségével lett felépítve.
-* Minden, a `main` ágra történő feltöltés (push) esetén egy felhős Linux szerver automatikusan létrehoz egy friss MongoDB példányt, feltelepíti a Node.js v20-at, majd a háttérben elindítja a backend és frontend szervereket.
-* A folyamat TCP port monitorozást használ, hogy megvárja a szerverek teljes betöltődését, mielőtt a Playwright teszteket headless (háttérben futó) böngészőkben elindítaná, garantálva a stabil és megbízható tesztfutásokat.
+The project features a fully automated Continuous Integration (CI) workflow built with **GitHub Actions**.
+* On every **push to the main branch**, a cloud-based Linux environment spins up a fresh MongoDB instance, installs Node.js v20, and initializes both backend and frontend servers.
+* The workflow utilizes **TCP port monitoring** to wait for server readiness before triggering Playwright tests in **headless browsers**, ensuring stable and reliable deployment checks.
 
 ---
 
-## Alkalmazott technológiák
+## Tech Stack
 
 ### Backend
 * **Node.js & Express.js**
-* **MongoDB & Mongoose**: Dokumentum-orientált adatbázis és ODM.
-* **jsonwebtoken & bcryptjs**: Hitelesítéshez és jelszavak hasheléséhez.
-* **express-rate-limit & express-async-handler**: Biztonság és hibakezelés.
+* **MongoDB & Mongoose**: Document-oriented database and ODM.
+* **jsonwebtoken & bcryptjs**: For authentication and password hashing.
+* **express-rate-limit & express-async-handler**: Security and clean error handling.
 
 ### Frontend
-* **Angular 17+**
-* **Angular Material** (UI komponensek)
+* **Angular 21**
+* **Angular Material**: Professional UI component library.
 
-### Tesztelés
-* **Jest** (Backend-Egység tesztek)
-* **Playwright** (Frontend-Automatizált E2E tesztek)
+### Testing Tools
+* **Jest**: Backend Unit & Integration testing.
+* **Playwright**: Frontend E2E Automation.
 
 ---
 
-## Telepítés és futtatás
+## Installation & Setup
 
-### 1. Előfeltételek
-- Node.js (LTS verzió)
-- MongoDB Community Server & Compass
-- Postman (a teszteléshez)
+### 1. Prerequisites
+- Node.js (LTS version)
+- MongoDB Community Server
+- Postman (optional, for manual API testing)
 
-### 2. Környezeti változók (.env)
-A `backend` mappában hozzon létre egy `.env` fájlt az alábbi struktúrával:
+### 2. Environment Variables (.env)
+Create a `.env` file in the `backend` folder:
 
 ```env
 PORT=3000
@@ -81,16 +75,16 @@ MONGO_URI=mongodb://localhost:27017/gamer_inventory
 JWT_SECRET=your_super_secret_key_here
 ```
 
-### Backend indítása
+### Starting Backend
 1. `cd backend`
 2. `npm install`
-3. `npm run dev` (nodemon használatával)
+3. `npm run dev`
 
-### Frontend indítása
+### Starting Frontend
 1. `cd frontend`
 2. `npm install`
 3. `ng serve`
-4. Nyissa meg a böngészőt a `http://localhost:4200` címen.
+4. Access the app at `http://localhost:4200`
 
 ---
 
