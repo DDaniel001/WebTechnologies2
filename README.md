@@ -22,12 +22,16 @@ The backend is a production-ready REST API featuring:
 
 ### 1. End-to-End (E2E) Testing (Playwright)
 
+![Frontend Automated Tests](docs/frontend_automated_tests.png)
+
 The frontend UI is validated using **Playwright**, simulating real user behavior and critical business flows.
 * **Page Object Model (POM):** The test suite is structured using the POM design pattern. HTML locators and page-specific actions are encapsulated in classes (e.g., `login.page.ts`, `home.page.ts`), ensuring high maintainability.
 * **API Mocking & Network Interception:** Backend dependencies are isolated using Playwright's `page.route()`. This allows testing frontend logic (e.g., empty states, server errors, and data rendering) independently from the live database.
 * **UI State Validation:** Tests strictly verify complex UI states, including `disabled` button logic for invalid forms and the accuracy of Angular Material validation messages.
 
 ### 2. Backend Unit & Integration Testing (Jest)
+
+![Backend Coverage](docs/backend_coverage.png)
 
 The Node.js REST API includes a comprehensive test suite to guarantee business logic integrity and security.
 * **Isolated Testing (Mocking):** Using `jest.mock()`, the database layer (Mongoose models) and cryptographic functions (bcrypt) are mocked, allowing tests to run at lightning speed in total isolation.
