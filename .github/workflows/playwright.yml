@@ -44,13 +44,14 @@ jobs:
         working-directory: ./frontend
         env:
           NG_CLI_ANALYTICS: false
+          CI: true
         run: |
           npm install
           npm start &
         
       # 5. Wait for both servers to be ready before running tests
       - name: Wait for servers
-        run: npx --yes wait-on http-get://127.0.0.1:3000 http-get://127.0.0.1:4200 -t 120000
+        run: npx --yes wait-on tcp:3000 tcp:4200 -t 120000
 
       # 6. Install Playwright browsers
       - name: Install Playwright Browsers
