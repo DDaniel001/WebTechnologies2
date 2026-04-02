@@ -42,13 +42,15 @@ jobs:
       # 4. Install frontend dependencies and start the Angular app in the background
       - name: Install and Start Frontend
         working-directory: ./frontend
+        env:
+          NG_CLI_ANALYTICS: false
         run: |
           npm install
           npm start &
         
       # 5. Wait for both servers to be ready before running tests
       - name: Wait for servers
-        run: npx wait-on http-get://localhost:3000 http-get://localhost:4200
+        run: npx wait-on http-get://127.0.0.1:3000 http-get://127.0.0.1:4200 -t 120000
 
       # 6. Install Playwright browsers
       - name: Install Playwright Browsers
