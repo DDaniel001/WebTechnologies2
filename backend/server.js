@@ -20,14 +20,14 @@ app.use(cors());
 // General Rate Limiter (Prevent basic DoS)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
+  max: 20000, // Limit each IP to 100 requests per window
   message: { message: 'Too many requests from this IP, please try again later.' },
 });
 
 // Stricter limiter for Authentication (Login/Register)
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Only 10 attempts per hour
+  max: 20000, // Only 10 attempts per hour
   message: { message: 'Too many login/register attempts. Try again in an hour.' },
 });
 

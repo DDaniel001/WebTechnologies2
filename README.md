@@ -30,6 +30,10 @@ A backend egy REST API, amely az alábbi funkciókkal rendelkezik:
 * **Angular 17+**
 * **Angular Material** (UI komponensek)
 
+### Tesztelés
+* **Jest** (Backend-Egység tesztek)
+* **Playwright** (Frontend-Automatizált)
+
 ## Telepítés és futtatás
 
 ### 1. Előfeltételek

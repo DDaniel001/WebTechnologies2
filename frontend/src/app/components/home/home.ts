@@ -52,8 +52,12 @@ export class Home implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadGames();
-  }
+  this.authService.user$.subscribe(user => {
+    if (user) {
+      this.loadGames();
+    }
+  });
+}
 
   /**
    * Fetches the user's games and updates the view

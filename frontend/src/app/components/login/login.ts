@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -30,6 +30,7 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   // Define the login form with validation
   loginForm: FormGroup = this.fb.group({
@@ -52,6 +53,7 @@ export class Login {
         error: (err) => {
           this.errorMessage = err.error.message || 'Login failed. Please check your credentials.';
           console.error('Login error:', err);
+          this.cdr.detectChanges();
         }
       });
     }
