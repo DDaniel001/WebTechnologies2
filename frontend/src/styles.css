@@ -6,7 +6,7 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: #485565 !important; /* Light grayish-blue for a modern look */
+  background-color: #c7c9cc !important; /* Light grayish-blue for a modern look */
 }
 
 /* Pushes navigation items to the right */

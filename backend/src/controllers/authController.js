@@ -23,6 +23,11 @@ const generateToken = (id) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
+  if (!username || !email || !password) {
+    res.status(400);
+    throw new Error('Please add all fields');
+  }
+
   // Check if the user already exists in the database
   const userExists = await User.findOne({ email });
 
@@ -62,16 +67,16 @@ const loginUser = asyncHandler(async (req, res) => {
   // Find user and explicitly select the password field which is hidden by default
   const user = await User.findOne({ email }).select('+password');
 
-  // Check if user exists and the provided password matches the hashed password
+  // Check if user exists and password matches
   if (user && (await user.matchPassword(password))) {
-    res.json({
+    // Explicitly set the 200 status code before sending JSON
+    res.status(200).json({
       _id: user._id,
       username: user.username,
       email: user.email,
       token: generateToken(user._id),
     });
   } else {
-    // We use 401 Unauthorized for failed login attempts
     res.status(401);
     throw new Error('Invalid email or password');
   }

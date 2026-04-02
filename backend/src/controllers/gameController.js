@@ -7,7 +7,7 @@ const asyncHandler = require('express-async-handler');
  * @access  Public
  */
 const getGames = asyncHandler(async (req, res) => {
-  const games = await Game.find();
+  const games = await Game.find({ user: req.user._id });
   res.status(200).json(games);
 });
 
@@ -17,8 +17,12 @@ const getGames = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const createGame = asyncHandler(async (req, res) => {
-  // We can access req.user.id because of the 'protect' middleware
   const { title, platform, genre, rating, status } = req.body;
+
+  if (!title || !platform || !genre || !rating || !status) {
+    res.status(400);
+    throw new Error('Please add all required fields');
+  }
 
   const game = await Game.create({
     title,
@@ -26,7 +30,7 @@ const createGame = asyncHandler(async (req, res) => {
     genre,
     rating,
     status,
-    user: req.user._id, // Link the game to the logged-in user
+    user: req.user._id, 
   });
 
   res.status(201).json(game);
