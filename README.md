@@ -1,5 +1,5 @@
-# WebTechnologies2
 # Videójáték Nyilvántartó Rendszer
+[![Playwright Tests](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml/badge.svg)](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml)
 
 Ez egy Webtechnológiák 2 kurzusra készített beadandó feladat, amely egy modern, MEAN stack (MongoDB, Express, Angular, Node.js) alapú készletnyilvántartó alkalmazás.
 
@@ -16,23 +16,54 @@ A backend egy REST API, amely az alábbi funkciókkal rendelkezik:
 
 ---
 
+---
+
+## Automatizált Tesztelési Architektúra (QA Portfólió)
+
+*Ez a szekció a projektben implementált minőségbiztosítási (QA) folyamatokat részletezi, bemutatva az elvárt automatizált tesztelési megoldásokat.*
+
+### 1. End-to-End (E2E) Tesztelés (Playwright)
+
+![Frontend Automated Tests](docs/frontend_automated_tests.png)
+
+A frontend automatizált UI tesztelését a **Playwright** biztosítja, amely valós felhasználói viselkedéseket és kritikus folyamatokat szimulál.
+* **Page Object Model (POM):** A tesztkészlet a POM tervezési minta alapján épül fel. A HTML lokátorok és az oldal-specifikus műveletek külön osztályokba vannak szervezve (pl. `login.page.ts`, `home.page.ts`), ami magas szintű karbantarthatóságot eredményez.
+* **API Mocking és Hálózat Elfogás:** A backend függőségek hatékonyan el vannak különítve a Playwright `page.route()` metódusának segítségével. Ez lehetővé teszi a frontend logika (pl. üres állapotok, szerverhibák és adatmegjelenítés) tesztelését az élő adatbázistól függetlenül.
+* **UI Állapot Validáció:** A tesztek szigorúan ellenőrzik a komplex UI állapotokat, beleértve az űrlapok gombjainak `disabled` (kikapcsolt) állapotát érvénytelen adatok esetén, valamint az Angular Material validációs hibaüzeneteinek pontos megjelenését.
+
+### 2. Backend Unit- és Integrációs Tesztelés (Jest)
+
+![Backend Coverage](docs/backend_coverage.png)
+
+A Node.js REST API egységteszteket tartalmaz az üzleti logika integritásának és biztonságának garantálása érdekében.
+* **Izolált Tesztelés (Mocking):** A `jest.mock()` használatával az adatbázis réteg (Mongoose modellek) és a kriptográfiai funkciók (bcrypt) mockolva lettek, így a tesztek villámgyorsan és egymástól teljesen elszigetelten futnak.
+* **AAA Minta:** Minden teszteset szigorúan követi az **Arrange, Act, Assert** (Előkészítés, Végrehajtás, Ellenőrzés) struktúrát a maximális átláthatóság érdekében.
+* **Happy Path és Negatív Ágak:** A tesztek nem csupán az ideális lefutást ("Happy Path") vizsgálják, hanem a negatív ágakat és a hibás bemeneteket (unhappy paths) is, garantálva a megfelelő hibaüzenetek és státuszkódok visszaadását.
+
+### 3. CI/CD Pipeline (GitHub Actions)
+A projekt egy teljesen automatizált Folyamatos Integrációs (CI) folyamattal rendelkezik, amely a **GitHub Actions** segítségével lett felépítve.
+* Minden, a `main` ágra történő feltöltés (push) esetén egy felhős Linux szerver automatikusan létrehoz egy friss MongoDB példányt, feltelepíti a Node.js v20-at, majd a háttérben elindítja a backend és frontend szervereket.
+* A folyamat TCP port monitorozást használ, hogy megvárja a szerverek teljes betöltődését, mielőtt a Playwright teszteket headless (háttérben futó) böngészőkben elindítaná, garantálva a stabil és megbízható tesztfutásokat.
+
+---
+
 ## Alkalmazott technológiák
 
 ### Backend
 * **Node.js & Express.js**
 * **MongoDB & Mongoose**: Dokumentum-orientált adatbázis és ODM.
-* **jsonwebtoken**: Token alapú hitelesítéshez.
-* **bcryptjs**: Jelszavak biztonságos hasheléséhez.
-* **express-rate-limit**: Kérések számának korlátozásához a biztonság érdekében.
-* **express-async-handler**: Aszinkron hibák kezeléséhez a tiszta kódért.
+* **jsonwebtoken & bcryptjs**: Hitelesítéshez és jelszavak hasheléséhez.
+* **express-rate-limit & express-async-handler**: Biztonság és hibakezelés.
 
-### Frontend (Fejlesztés alatt)
+### Frontend
 * **Angular 17+**
 * **Angular Material** (UI komponensek)
 
 ### Tesztelés
 * **Jest** (Backend-Egység tesztek)
-* **Playwright** (Frontend-Automatizált)
+* **Playwright** (Frontend-Automatizált E2E tesztek)
+
+---
 
 ## Telepítés és futtatás
 
