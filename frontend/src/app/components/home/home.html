@@ -63,7 +63,7 @@
               {{ isEditMode ? 'Update Game' : 'Add Game' }}
             </button>
             
-            <button mat-stroked-button color="warn" type="button" *ngIf="isEditMode" (click)="cancelEdit()">
+            <button mat-stroked-button color="warn" type="button" *ngIf="isEditMode" (click)="cancelEdit()" style="margin-left: 10px;">
               Cancel
             </button>
           </div>
@@ -73,9 +73,18 @@
 
     <div class="games-list">
       <h2 class="list-title">My Collection</h2>
-      <p *ngIf="games.length === 0" class="empty-text">No games added yet. Start your collection!</p>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Search games...</mat-label>
+        <input matInput (input)="onSearch($event)" placeholder="Search by title, platform or genre">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <p *ngIf="filteredGames.length === 0" class="empty-text">
+        {{ searchTerm ? 'No matching games found.' : 'No games added yet. Start your collection!' }}
+      </p>
       
-      <mat-card *ngFor="let game of games" class="game-card">
+      <mat-card *ngFor="let game of filteredGames" class="game-card">
         <mat-card-header>
           <mat-card-title>{{ game.title }}</mat-card-title>
           <mat-card-subtitle>{{ game.platform }} • {{ game.genre }}</mat-card-subtitle>

@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../services/auth';
 import { GameService } from '../../services/game';
@@ -26,7 +27,8 @@ import { Game } from '../../models/game.model';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatSnackBarModule
   ],
   templateUrl: './home.html',
   styleUrl: './home.css'
@@ -37,13 +39,16 @@ export class Home implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
+  private snackBar = inject(MatSnackBar);
 
   user$ = this.authService.user$;
   games: Game[] = [];
+  filteredGames: Game[] = []; 
   
-  // Edit logic states
+  // States
   isEditMode = false;
   editingGameId: string | null = null;
+  searchTerm: string = ''; // EZ A SOR HIÁNYZOTT!
 
   gameForm: FormGroup = this.fb.group({
     title: ['', Validators.required],
@@ -65,15 +70,22 @@ export class Home implements OnInit {
     this.gameService.getGames().subscribe({
       next: (data) => {
         this.games = data;
+        this.filteredGames = data; 
         this.cdr.detectChanges(); 
       },
       error: (err) => console.error('Error loading games', err)
     });
   }
 
-  /**
-   * Switches to Edit Mode and fills the form with the game's data
-   */
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value.toLowerCase();
+    this.filteredGames = this.games.filter(game => 
+      game.title.toLowerCase().includes(this.searchTerm) || 
+      game.platform.toLowerCase().includes(this.searchTerm) ||
+      game.genre.toLowerCase().includes(this.searchTerm)
+    );
+  }
+
   editGame(game: Game): void {
     this.isEditMode = true;
     this.editingGameId = game._id!;
@@ -84,45 +96,42 @@ export class Home implements OnInit {
       rating: game.rating,
       status: game.status
     });
-    // Scroll smoothly to the form for better UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /**
-   * Resets the form and returns to Add Mode
-   */
   cancelEdit(): void {
     this.isEditMode = false;
     this.editingGameId = null;
     this.gameForm.reset({ rating: 5, status: 'Backlog' });
     this.cdr.detectChanges();
   }
-
+  
   /**
-   * Handles both Add and Update logic based on isEditMode
-   */
+  * Handles both Add and Update logic based on isEditMode
+  */
   onSubmitGame(): void {
     if (this.gameForm.valid) {
       if (this.isEditMode && this.editingGameId) {
-        // --- UPDATE LOGIC ---
         this.gameService.updateGame(this.editingGameId, this.gameForm.value).subscribe({
           next: (updatedGame) => {
-            // Update the game in the local array
             this.games = this.games.map(g => g._id === this.editingGameId ? updatedGame : g);
+            this.filteredGames = [...this.games];
+            this.snackBar.open('Game updated successfully!', 'Close', { duration: 3000 });
             this.cancelEdit();
             this.cdr.detectChanges();
           },
-          error: (err) => console.error('Error updating game', err)
+          error: (err) => this.snackBar.open('Error updating game', 'Close', { duration: 3000 })
         });
       } else {
-        // --- ADD LOGIC ---
         this.gameService.addGame(this.gameForm.value).subscribe({
           next: (newGame) => {
-            this.games = [...this.games, newGame]; 
+            this.games = [...this.games, newGame];
+            this.filteredGames = [...this.games];
             this.gameForm.reset({ rating: 5, status: 'Backlog' });
+            this.snackBar.open('Game added successfully!', 'Close', { duration: 3000 });
             this.cdr.detectChanges(); 
           },
-          error: (err) => console.error('Error adding game', err)
+          error: (err) => this.snackBar.open('Error adding game', 'Close', { duration: 3000 })
         });
       }
     }
@@ -133,9 +142,11 @@ export class Home implements OnInit {
     this.gameService.deleteGame(id).subscribe({
       next: () => {
         this.games = this.games.filter(g => g._id !== id);
+        this.filteredGames = this.filteredGames.filter(g => g._id !== id);
+        this.snackBar.open('Game deleted successfully', 'Close', { duration: 3000 });
         this.cdr.detectChanges(); 
       },
-      error: (err) => console.error('Error deleting game', err)
+      error: (err) => this.snackBar.open('Error deleting game', 'Close', { duration: 3000 })
     });
   }
 
