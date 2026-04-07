@@ -44,12 +44,13 @@ const createGame = asyncHandler(async (req, res) => {
 const getGameById = asyncHandler(async (req, res) => {
   const game = await Game.findById(req.params.id);
 
-  if (game) {
-    res.json(game);
-  } else {
+  // Check for game and ownership
+  if (!game || game.user.toString() !== req.user._id.toString()) {
     res.status(404);
     throw new Error('Game not found');
   }
+
+  res.json(game);
 });
 
 /**
@@ -63,6 +64,12 @@ const updateGame = asyncHandler(async (req, res) => {
   if (!game) {
     res.status(404);
     throw new Error('Game not found');
+  }
+
+  // Check for ownership
+  if (game.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error('User not authorized');
   }
 
   const updatedGame = await Game.findByIdAndUpdate(req.params.id, req.body, {
@@ -81,13 +88,19 @@ const updateGame = asyncHandler(async (req, res) => {
 const deleteGame = asyncHandler(async (req, res) => {
   const game = await Game.findById(req.params.id);
 
-  if (game) {
-    await game.deleteOne();
-    res.json({ message: 'Game removed' });
-  } else {
+  if (!game) {
     res.status(404);
     throw new Error('Game not found');
   }
+
+  // Check for ownership
+  if (game.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error('User not authorized');
+  }
+
+  await game.deleteOne();
+  res.json({ message: 'Game removed' });
 });
 
 module.exports = {

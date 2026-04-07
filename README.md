@@ -1,7 +1,7 @@
 # Video Game Inventory Management System
 [![Playwright Tests](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml/badge.svg)](https://github.com/DDaniel001/WebTechnologies2/actions/workflows/playwright.yml)
 
-A modern inventory management application built as a final project for the Web Technologies 2 course. The system leverages the MEAN stack (MongoDB, Express, Angular, Node.js) to provide a robust and scalable solution.
+A modern inventory management application built as a final project for the Web Technologies 2 course. The system leverages the MEAN stack (MongoDB, Express, Angular, Node.js) to provide a scalable solution.
 
 ## Backend Features (REST API)
 
@@ -16,9 +16,7 @@ The backend is a production-ready REST API featuring:
 
 ---
 
-## Automated Testing Architecture (QA Portfolio)
-
-*This section details the Quality Assurance (QA) processes implemented in the project, showcasing industry-standard automated testing solutions.*
+## Automated Testing Architecture
 
 ### 1. End-to-End (E2E) Testing (Playwright)
 

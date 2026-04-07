@@ -3,6 +3,9 @@ import { Page, Locator } from '@playwright/test';
 export class HomePage {
   readonly page: Page;
   readonly addGameBtn: Locator;
+  readonly updateGameBtn: Locator;
+  readonly cancelBtn: Locator;
+  readonly searchInput: Locator;
   readonly titleInput: Locator;
   readonly genreInput: Locator;
   readonly ratingInput: Locator;
@@ -14,12 +17,17 @@ export class HomePage {
   constructor(page: Page) {
     this.page = page;
     this.addGameBtn = page.locator('button:has-text("Add Game")');
+    this.updateGameBtn = page.locator('button:has-text("Update Game")');
+    this.cancelBtn = page.locator('button:has-text("Cancel")');
+    this.searchInput = page.locator('input[placeholder*="Search by title"]');
     this.titleInput = page.locator('input[formControlName="title"]');
     this.genreInput = page.locator('input[formControlName="genre"]');
     this.ratingInput = page.locator('input[formControlName="rating"]');
     this.platformSelect = page.locator('mat-select[formControlName="platform"]');
     this.statusSelect = page.locator('mat-select[formControlName="status"]');
-    this.logoutBtn = this.logoutBtn = page.locator('button[color="warn"]:has-text("Logout")');
+    
+    this.logoutBtn = page.locator('mat-card.welcome-card button:has-text("Logout")');
+    
     this.gameCards = page.locator('mat-card.game-card');
   }
 
@@ -38,7 +46,14 @@ export class HomePage {
   }
 
   getGameCard(title: string): Locator {
-    return this.gameCards.filter({ hasText: title });
+    return this.gameCards.filter({ 
+      has: this.page.locator('mat-card-title', { hasText: new RegExp(`^${title}$`) }) 
+    });
+  }
+
+  async clickEditOnCard(title: string) {
+    const card = this.getGameCard(title);
+    await card.locator('button:has(mat-icon:text("edit"))').click();
   }
 
   async deleteGame(title: string) {
