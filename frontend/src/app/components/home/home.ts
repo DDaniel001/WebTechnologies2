@@ -36,13 +36,15 @@ export class Home implements OnInit {
   private gameService = inject(GameService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
-  
-  // Inject ChangeDetectorRef to manually trigger UI updates
   private cdr = inject(ChangeDetectorRef);
 
   user$ = this.authService.user$;
   games: Game[] = [];
   
+  // Edit logic states
+  isEditMode = false;
+  editingGameId: string | null = null;
+
   gameForm: FormGroup = this.fb.group({
     title: ['', Validators.required],
     platform: ['', Validators.required],
@@ -52,21 +54,17 @@ export class Home implements OnInit {
   });
 
   ngOnInit(): void {
-  this.authService.user$.subscribe(user => {
-    if (user) {
-      this.loadGames();
-    }
-  });
-}
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.loadGames();
+      }
+    });
+  }
 
-  /**
-   * Fetches the user's games and updates the view
-   */
   loadGames(): void {
     this.gameService.getGames().subscribe({
       next: (data) => {
         this.games = data;
-        // Tell Angular to update the HTML right now
         this.cdr.detectChanges(); 
       },
       error: (err) => console.error('Error loading games', err)
@@ -74,35 +72,67 @@ export class Home implements OnInit {
   }
 
   /**
-   * Submits the new game form and updates the list instantly
+   * Switches to Edit Mode and fills the form with the game's data
    */
-  onSubmitGame(): void {
-    if (this.gameForm.valid) {
-      this.gameService.addGame(this.gameForm.value).subscribe({
-        next: (newGame) => {
-          // Use spread operator to create a new array reference instead of .push()
-          this.games = [...this.games, newGame]; 
-          this.gameForm.reset({ rating: 5, status: 'Backlog' });
-          
-          // Force UI refresh after adding the game
-          this.cdr.detectChanges(); 
-        },
-        error: (err) => console.error('Error adding game', err)
-      });
-    }
+  editGame(game: Game): void {
+    this.isEditMode = true;
+    this.editingGameId = game._id!;
+    this.gameForm.patchValue({
+      title: game.title,
+      platform: game.platform,
+      genre: game.genre,
+      rating: game.rating,
+      status: game.status
+    });
+    // Scroll smoothly to the form for better UX
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /**
-   * Deletes a game and updates the list instantly
+   * Resets the form and returns to Add Mode
    */
+  cancelEdit(): void {
+    this.isEditMode = false;
+    this.editingGameId = null;
+    this.gameForm.reset({ rating: 5, status: 'Backlog' });
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Handles both Add and Update logic based on isEditMode
+   */
+  onSubmitGame(): void {
+    if (this.gameForm.valid) {
+      if (this.isEditMode && this.editingGameId) {
+        // --- UPDATE LOGIC ---
+        this.gameService.updateGame(this.editingGameId, this.gameForm.value).subscribe({
+          next: (updatedGame) => {
+            // Update the game in the local array
+            this.games = this.games.map(g => g._id === this.editingGameId ? updatedGame : g);
+            this.cancelEdit();
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Error updating game', err)
+        });
+      } else {
+        // --- ADD LOGIC ---
+        this.gameService.addGame(this.gameForm.value).subscribe({
+          next: (newGame) => {
+            this.games = [...this.games, newGame]; 
+            this.gameForm.reset({ rating: 5, status: 'Backlog' });
+            this.cdr.detectChanges(); 
+          },
+          error: (err) => console.error('Error adding game', err)
+        });
+      }
+    }
+  }
+
   deleteGame(id: string | undefined): void {
     if (!id) return;
     this.gameService.deleteGame(id).subscribe({
       next: () => {
-        // Filter out the deleted game
         this.games = this.games.filter(g => g._id !== id);
-        
-        // Force UI refresh after deletion
         this.cdr.detectChanges(); 
       },
       error: (err) => console.error('Error deleting game', err)
