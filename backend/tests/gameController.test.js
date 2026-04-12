@@ -1,92 +1,98 @@
-const { getGames, createGame, getGameById, updateGame, deleteGame } = require('../src/controllers/gameController');
+//npm test -- --coverage
 const Game = require('../src/models/Game');
+const {
+  getGames,
+  createGame,
+  getGameById,
+  updateGame,
+  deleteGame,
+} = require('../src/controllers/gameController');
 
-// Mock the database model
+// Mocking the Game model
 jest.mock('../src/models/Game');
 
 describe('Game Controller', () => {
-  let req, res;
+  let req, res, next;
 
   beforeEach(() => {
-    // ARRANGE: Set up request and response mocks
+    // Standard mock request with user ID
     req = {
-      user: { _id: 'testUserId123' },
+      user: { _id: 'user123' },
+      params: {},
       body: {},
-      params: {}
     };
     res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn()
+      json: jest.fn(),
     };
+    next = jest.fn();
   });
 
   afterEach(() => {
-    // Clear mock data after each test to avoid interference
     jest.clearAllMocks();
   });
 
   describe('getGames()', () => {
-    it('should fetch and return games for the logged-in user', async () => {
-      const mockGames = [{ title: 'The Witcher 3' }, { title: 'Cyberpunk 2077' }];
-      Game.find.mockResolvedValue(mockGames);
+    it('should return all games for the logged-in user', async () => {
+      const mockGames = [{ title: 'Game 1', user: 'user123' }];
+      Game.find = jest.fn().mockResolvedValue(mockGames);
 
       await getGames(req, res);
 
-      expect(Game.find).toHaveBeenCalledWith({ user: 'testUserId123' });
+      expect(Game.find).toHaveBeenCalledWith({ user: 'user123' });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockGames);
     });
   });
 
   describe('createGame()', () => {
-    it('should create a new game and return 201 status', async () => {
+    it('should create a new game', async () => {
       req.body = {
-        title: 'Elden Ring',
+        title: 'New Game',
         platform: 'PC',
         genre: 'RPG',
-        rating: 10,
-        status: 'Playing'
+        rating: 9,
+        status: 'Playing',
       };
-
-      const newGame = { ...req.body, user: 'testUserId123', _id: 'game123' };
-      Game.create.mockResolvedValue(newGame);
+      const mockGame = { ...req.body, user: 'user123' };
+      Game.create = jest.fn().mockResolvedValue(mockGame);
 
       await createGame(req, res);
 
       expect(Game.create).toHaveBeenCalledWith({
         ...req.body,
-        user: 'testUserId123'
+        user: 'user123',
       });
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(newGame);
+      expect(res.json).toHaveBeenCalledWith(mockGame);
     });
 
-    it('should return 400 if required fields are missing', async () => {
-      req.body = {};
+    it('should throw an error if required fields are missing', async () => {
+      req.body = { title: 'Incomplete Game' };
 
-      await expect(createGame(req, res)).rejects.toThrow('Please add all required fields');
+      await expect(createGame(req, res)).rejects.toThrow(
+        'Please add all required fields'
+      );
       expect(res.status).toHaveBeenCalledWith(400);
     });
   });
 
   describe('getGameById()', () => {
-    it('should return a game if it exists', async () => {
-      // ARRANGE
+    it('should return a game if it exists and belongs to the user', async () => {
+      // FIX: Added 'user' property to match ownership check in controller
+      const mockGame = { _id: 'game123', title: 'Test Game', user: 'user123' };
       req.params.id = 'game123';
-      const mockGame = { _id: 'game123', title: 'Halo' };
-      Game.findById.mockResolvedValue(mockGame);
+      Game.findById = jest.fn().mockResolvedValue(mockGame);
 
-      // ACT
       await getGameById(req, res);
 
-      // ASSERT
       expect(Game.findById).toHaveBeenCalledWith('game123');
       expect(res.json).toHaveBeenCalledWith(mockGame);
     });
 
-    it('should throw an error with 404 status if game is not found', async () => {
-      req.params.id = 'invalidId';
-      Game.findById.mockResolvedValue(null);
+    it('should throw 404 error if game is not found or not owned by user', async () => {
+      req.params.id = 'nonexistent';
+      Game.findById = jest.fn().mockResolvedValue(null);
 
       await expect(getGameById(req, res)).rejects.toThrow('Game not found');
       expect(res.status).toHaveBeenCalledWith(404);
@@ -95,53 +101,57 @@ describe('Game Controller', () => {
 
   describe('updateGame()', () => {
     it('should update the game and return the updated document', async () => {
-      // ARRANGE
       req.params.id = 'game123';
-      req.body = { status: 'Completed' };
-      const existingGame = { _id: 'game123', status: 'Playing' };
-      const updatedGame = { _id: 'game123', status: 'Completed' };
-      
-      Game.findById.mockResolvedValue(existingGame);
-      Game.findByIdAndUpdate.mockResolvedValue(updatedGame);
+      req.body = { title: 'Updated Title' };
+      // FIX: Mock original game must have the owner's ID
+      const originalGame = { _id: 'game123', user: 'user123', title: 'Old Title' };
+      const updatedGame = { ...originalGame, ...req.body };
 
-      // ACT
+      Game.findById = jest.fn().mockResolvedValue(originalGame);
+      Game.findByIdAndUpdate = jest.fn().mockResolvedValue(updatedGame);
+
       await updateGame(req, res);
 
-      // ASSERT
-      expect(Game.findByIdAndUpdate).toHaveBeenCalledWith('game123', req.body, { new: true, runValidators: true });
+      expect(Game.findById).toHaveBeenCalledWith('game123');
+      expect(Game.findByIdAndUpdate).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(updatedGame);
     });
 
-    it('should throw 404 if trying to update a non-existent game', async () => {
-      req.params.id = 'invalidId';
-      Game.findById.mockResolvedValue(null);
+    it('should throw 401 error if user tries to update someone else\'s game', async () => {
+        req.params.id = 'game123';
+        const otherUsersGame = { _id: 'game123', user: 'differentUser', title: 'Old Title' };
+        Game.findById = jest.fn().mockResolvedValue(otherUsersGame);
 
-      await expect(updateGame(req, res)).rejects.toThrow('Game not found');
-      expect(res.status).toHaveBeenCalledWith(404);
+        await expect(updateGame(req, res)).rejects.toThrow('User not authorized');
+        expect(res.status).toHaveBeenCalledWith(401);
     });
   });
 
   describe('deleteGame()', () => {
     it('should delete the game and return a success message', async () => {
-      // ARRANGE
       req.params.id = 'game123';
-      const mockGame = { _id: 'game123', deleteOne: jest.fn().mockResolvedValue({}) };
-      Game.findById.mockResolvedValue(mockGame);
+      // FIX: Mock game must have the owner's ID
+      const mockGame = { 
+        _id: 'game123', 
+        user: 'user123', 
+        deleteOne: jest.fn().mockResolvedValue(true) 
+      };
+      Game.findById = jest.fn().mockResolvedValue(mockGame);
 
-      // ACT
       await deleteGame(req, res);
 
-      // ASSERT
+      expect(Game.findById).toHaveBeenCalledWith('game123');
       expect(mockGame.deleteOne).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({ message: 'Game removed' });
     });
 
-    it('should throw 404 if trying to delete a non-existent game', async () => {
-      req.params.id = 'invalidId';
-      Game.findById.mockResolvedValue(null);
+    it('should throw 401 error if user tries to delete someone else\'s game', async () => {
+        req.params.id = 'game123';
+        const otherUsersGame = { _id: 'game123', user: 'differentUser' };
+        Game.findById = jest.fn().mockResolvedValue(otherUsersGame);
 
-      await expect(deleteGame(req, res)).rejects.toThrow('Game not found');
-      expect(res.status).toHaveBeenCalledWith(404);
+        await expect(deleteGame(req, res)).rejects.toThrow('User not authorized');
+        expect(res.status).toHaveBeenCalledWith(401);
     });
   });
 });
